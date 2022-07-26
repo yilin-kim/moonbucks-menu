@@ -17,11 +17,7 @@ function App() {
     e.preventDefault();
   });
 
-  // 메뉴의 이름을 입력받는 건 element 찾아서, 메소드로 이벤트를 달고 이벤트를 받을 수 있다. (사용자 입력 이벤트 ex. keypress)
-  $("#espresso-menu-name").addEventListener("keypress", (e) => {
-    // 엔터키가 아닐 때 바로 종료한다.
-    if (e.key !== "Enter") return;
-
+  const addEspressoMenu = () => {
     // 사용자가 메뉴 이름에 빈 값을 입력했을 때 예외 처리한다.
     if ($("#espresso-menu-name").value === "") {
       alert("메뉴 이름을 입력해주세요.");
@@ -62,6 +58,19 @@ function App() {
       // 메뉴 추가 후 espresso menu name을 빈값으로 초기화한다.
       $("#espresso-menu-name").value = "";
     }
+  };
+
+  // 확인 버튼을 눌렀을 때 메뉴를 추가한다.
+  $("#espresso-menu-submit-button").addEventListener("click", () => {
+    addEspressoMenu();
+  });
+
+  // 엔터키를 눌렀을 때 메뉴를 추가한다.
+  // 메뉴의 이름을 입력받는 건 element 찾아서, 메소드로 이벤트를 달고 이벤트를 받을 수 있다. (사용자 입력 이벤트 ex. keypress)
+  $("#espresso-menu-name").addEventListener("keypress", (e) => {
+    // 엔터키가 아닐 때 바로 종료한다.
+    if (e.key !== "Enter") return;
+    addEspressoMenu();
   });
 }
 
