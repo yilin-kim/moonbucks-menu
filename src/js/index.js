@@ -11,46 +11,23 @@
 // - [x] 메뉴의 수정 버튼을 클릭하면, 'prompt' 인터페이스를 통해 모달창이 뜬다.
 // - [x] 모달창에서 수정할 메뉴의 이름을 입력 받고, 확인 버튼을 누르면 메뉴가 수정된다.
 
+// 메뉴 삭제
+// - [x] 메뉴 삭제 버튼을 클릭하면,`confirm` 인터페이스를 통해 모달창이 뜬다.
+// - [x] 사용자가 확인 버튼을 누르면 메뉴가 삭제된다.
+// - [x] 총 메뉴 갯수를 count하여 상단에 보여준다.
+
 // JS에서 DOM element 가져올 때 관용적으로 $표시를 사용한다.
 // $표시로 DOM element return해서 반복 줄이는 함수
 const $ = (selector) => document.querySelector(selector);
 
 function App() {
-  // 메뉴 삭제
-  // - [x] 메뉴 삭제 버튼을 클릭하면,`confirm` 인터페이스를 통해 모달창이 뜬다.
-  // - [x] 사용자가 확인 버튼을 누르면 메뉴가 삭제된다.
-  // - [x] 총 메뉴 갯수를 count하여 상단에 보여준다.
-
   // espresso menu list 내 자식요소(li tag) 개수를 카운팅해서 메뉴 개수를 보여준다.
   const updateMenuCount = () => {
     const menuCount = $("#espresso-menu-list").children.length;
     $(".menu-count").innerText = `총 ${menuCount}개`;
   };
 
-  // 수정, 삭제 관련 이벤트를 위임한다.
-  $("#espresso-menu-list").addEventListener("click", (e) => {
-    if (e.target.classList.contains("menu-edit-button")) {
-      // 디폴트값으로 기존 메뉴의 이름을 넣어준다.
-      const $menuName = e.target.closest("li").querySelector(".menu-name");
-      // 새로운 이름을 입력받아서 li tag에 넣어준다.
-      const newMenuName = prompt("메뉴 이름을 입력하세요", $menuName.innerText);
-      $menuName.innerText = newMenuName;
-    }
-    if (e.target.classList.contains("menu-remove-button")) {
-      if (confirm("메뉴를 삭제하시겠습니까?")) {
-        e.target.closest("li").remove();
-        // 메뉴 개수 갱신
-        updateMenuCount();
-      }
-    }
-  });
-
-  //form 태그가 자동으로 전송되는 걸 막는다.
-  $("#espresso-menu-form").addEventListener("submit", (e) => {
-    e.preventDefault();
-  });
-
-  const addEspressoMenuName = () => {
+  const addMenuItem = () => {
     // 사용자가 메뉴 이름에 빈 값을 입력했을 때 예외 처리한다.
     if ($("#espresso-menu-name").value === "") {
       alert("메뉴 이름을 입력해주세요.");
@@ -88,10 +65,39 @@ function App() {
     $("#espresso-menu-name").value = "";
   };
 
-  // 확인 버튼을 눌렀을 때 메뉴를 추가한다.
-  $("#espresso-menu-submit-button").addEventListener("click", () => {
-    addEspressoMenuName();
+  const updateMenuName = (e) => {
+    // 디폴트값으로 기존 메뉴의 이름을 넣어준다.
+    const $menuName = e.target.closest("li").querySelector(".menu-name");
+    // 새로운 이름을 입력받아서 li tag에 넣어준다.
+    const newMenuName = prompt("메뉴 이름을 입력하세요", $menuName.innerText);
+    $menuName.innerText = newMenuName;
+  };
+
+  const removeMenuItem = (e) => {
+    if (confirm("메뉴를 삭제하시겠습니까?")) {
+      e.target.closest("li").remove();
+      // 메뉴 개수 갱신
+      updateMenuCount();
+    }
+  };
+
+  // 수정, 삭제 관련 이벤트를 위임한다.
+  $("#espresso-menu-list").addEventListener("click", (e) => {
+    if (e.target.classList.contains("menu-edit-button")) {
+      updateMenuName(e);
+    }
+    if (e.target.classList.contains("menu-remove-button")) {
+      removeMenuItem(e);
+    }
   });
+
+  //form 태그가 자동으로 전송되는 걸 막는다.
+  $("#espresso-menu-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+  });
+
+  // 확인 버튼을 눌렀을 때 메뉴를 추가한다.
+  $("#espresso-menu-submit-button").addEventListener("click", addMenuItem);
 
   // 엔터키를 눌렀을 때 메뉴를 추가한다.
   // 메뉴의 이름을 입력받는 건 element 찾아서, 메소드로 이벤트를 달고 이벤트를 받을 수 있다. (사용자 입력 이벤트 ex. keypress)
@@ -99,9 +105,7 @@ function App() {
     // 엔터키가 아닐 때 바로 종료한다.
     if (e.key !== "Enter") return;
     // 엔터키를 눌렀을 때 메뉴를 추가하는 함수를 호출한다.
-    if (e.key === "Enter") {
-      addEspressoMenuName();
-    }
+    addMenuItem();
   });
 }
 
