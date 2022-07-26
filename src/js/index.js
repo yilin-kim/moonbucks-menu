@@ -1,10 +1,11 @@
 // step1 요구사항 분석
 // 메뉴 추가
-// - [x] 메뉴의 이름을 입력 받고 엔터키 입력으로 추가한다
+// - [x] 메뉴의 이름을 입력 받고 엔터키 입력으로 추가한다.
+// - [ ] 메뉴의 이름을 입력 받고 '확인' 버튼으로 추가한다.
 // - [x] 추가되는 메뉴의 아래 마크업은 `<ul id="espresso-menu-list" class="mt-3 pl-0"></ul>` 안에 삽입해야 한다.
 // - [x] 총 메뉴 개수를 count하여 상단에 보여준다.
 // - [x] 메뉴가 추가되고 나면, input은 빈 값으로 초기화한다.
-// - [ ] 사용자 입력값이 빈 값이라면 추가되지 않는다.
+// - [x] 사용자 입력값이 빈 값이라면 추가되지 않는다.
 
 // JS에서 DOM element 가져올 때 관용적으로 $표시를 사용한다.
 // $표시로 DOM element return해서 반복 줄이는 함수
@@ -18,6 +19,16 @@ function App() {
 
   // 메뉴의 이름을 입력받는 건 element 찾아서, 메소드로 이벤트를 달고 이벤트를 받을 수 있다. (사용자 입력 이벤트 ex. keypress)
   $("#espresso-menu-name").addEventListener("keypress", (e) => {
+    // 엔터키가 아닐 때 바로 종료한다.
+    if (e.key !== "Enter") return;
+
+    // 사용자가 메뉴 이름에 빈 값을 입력했을 때 예외 처리한다.
+    if ($("#espresso-menu-name").value === "") {
+      alert("메뉴 이름을 입력해주세요.");
+      return;
+    }
+
+    // 사용자가 엔터키를 눌렀을 때 메뉴를 추가한다.
     if (e.key === "Enter") {
       const $espressoMenuName = $("#espresso-menu-name").value;
       const createMenuItem = (espressoMenuName) => {
