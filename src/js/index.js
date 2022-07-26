@@ -9,8 +9,8 @@
 
 // 메뉴 수정
 // - [x] 메뉴의 수정 버튼을 클릭하면, 'prompt' 인터페이스를 통해 모달창이 뜬다.
-// - [ ] 모달창에서 수정할 메뉴의 이름을 입력 받고, 확인 버튼을 누르면 메뉴가 수정된다.
-// - [ ] 총 메뉴 갯수를 count하여 상단에 보여준다.
+// - [x] 모달창에서 수정할 메뉴의 이름을 입력 받고, 확인 버튼을 누르면 메뉴가 수정된다.
+// - [x] 총 메뉴 갯수를 count하여 상단에 보여준다.
 
 // JS에서 DOM element 가져올 때 관용적으로 $표시를 사용한다.
 // $표시로 DOM element return해서 반복 줄이는 함수
@@ -21,7 +21,10 @@ function App() {
   $("#espresso-menu-list").addEventListener("click", (e) => {
     if (e.target.classList.contains("menu-edit-button")) {
       // 디폴트값으로 기존 메뉴의 이름을 넣어준다.
-      prompt("메뉴 이름을 입력하세요", e.target.parentElement.innerText);
+      const $menuName = e.target.closest("li").querySelector(".menu-name");
+      // 새로운 이름을 입력받아서 li tag에 넣어준다.
+      const newMenuName = prompt("메뉴 이름을 입력하세요", $menuName.innerText);
+      $menuName.innerText = newMenuName;
     }
   });
   //form 태그가 자동으로 전송되는 걸 막는다.
