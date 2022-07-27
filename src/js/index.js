@@ -18,7 +18,7 @@
 
 // step2 요구사항 분석
 // localStorage Read & Write
-// - [ ] localStorage에 메뉴를 저장한다.
+// - [ ] localStorage에 메뉴를 저장한다. (추가, 수정, 삭제)
 // - [ ] localStorage에서 메뉴를 가져온다.
 
 // 카테고리별 메뉴판 관리
@@ -42,7 +42,24 @@
 // $표시로 DOM element return해서 반복 줄이는 함수
 const $ = (selector) => document.querySelector(selector);
 
+const storeMenu = {
+  setLocalStorage(menu) {
+    // JSON 객체를 문자열로 저장한다.
+    localStorage.setItem("menu", JSON.stringify(menu));
+  },
+  getLocalStorage() {
+    // localStorage에서 메뉴를 가져온다.
+    localStorage.getItem("menu");
+  },
+};
+
 function App() {
+  // 상태(변할 수 있는 데이터)
+  // - 메뉴들, 개수, 품절 상태
+  // 메뉴명은 App이라는 함수 객체가 가지고 있는 상태이기 때문에 this를 이용해서 관리할 수 있다.
+  // 빈 배열로 초기화하고 데이터가 변할 때마다 관리한다.
+  this.menu = [];
+
   // espresso menu list 내 자식요소(li tag) 개수를 카운팅해서 메뉴 개수를 보여준다.
   const updateMenuCount = () => {
     const menuCount = $("#espresso-menu-list").children.length;
@@ -56,10 +73,20 @@ function App() {
       return;
     }
 
-    const $espressoMenuName = $("#espresso-menu-name").value;
-    const createMenuItem = (espressoMenuName) => {
-      return `<li class="menu-list-item d-flex items-center py-2">
-      <span class="w-100 pl-2 menu-name">${espressoMenuName}</span>
+    // input tag의 입력값으로 메뉴 이름을 저장한다.
+    const espressoMenuName = $("#espresso-menu-name").value;
+
+    // 저장한 메뉴 이름을 메뉴 배열에 push한다.
+    this.menu.push({ name: espressoMenuName });
+
+    // 상태가 변경됐을 때 바로 local Storage에 저장한다.
+    storeMenu.setLocalStorage(this.menu);
+
+    // map function을 통해 [`<li></li>`,`<li></li>`,`<li></li>`]으로 리턴된 걸 join 시켜서 문자열로 만들어준다.
+    const menuListTemplate = this.menu
+      .map((item, index) => {
+        return `<li data-menu-id="${index}" class="menu-list-item d-flex items-center py-2">
+      <span class="w-100 pl-2 menu-name">${item.name}</span>
       <button
         type="button"
         class="bg-gray-50 text-gray-500 text-sm mr-1 menu-edit-button"
@@ -73,14 +100,13 @@ function App() {
         삭제
       </button>
     </li>`;
-    };
+      })
+      .join("");
 
     // HTML에 추가해서 넣어준다.
-    $("#espresso-menu-list").insertAdjacentHTML(
-      "beforeend",
-      createMenuItem($espressoMenuName)
-    );
+    $("#espresso-menu-list").innerHTML = menuListTemplate;
 
+    // 메뉴 개수를 업데이트한다.
     updateMenuCount();
 
     // 메뉴 추가 후 espresso menu name을 빈값으로 초기화한다.
@@ -88,11 +114,20 @@ function App() {
   };
 
   const updateMenuName = (e) => {
+    // data 속성은 dataset으로 접근 가능해서 menuId를 가져온다.
+    const menuId = e.target.closest("li").dataset.menuId;
     // 디폴트값으로 기존 메뉴의 이름을 넣어준다.
     const $menuName = e.target.closest("li").querySelector(".menu-name");
     // 새로운 이름을 입력받아서 li tag에 넣어준다.
-    const newMenuName = prompt("메뉴 이름을 입력하세요", $menuName.innerText);
-    $menuName.innerText = newMenuName;
+    const updatedMenuName = prompt(
+      "메뉴 이름을 입력하세요",
+      $menuName.innerText
+    );
+    // 상태가 변경됐을 때 바로 수정한다.
+    this.menu[menuId].name = updatedMenuName;
+    // localStorage에 반영한다.
+    storeMenu.setLocalStorage(this.menu);
+    $menuName.innerText = updatedMenuName;
   };
 
   const removeMenuItem = (e) => {
@@ -131,4 +166,4 @@ function App() {
   });
 }
 
-App();
+new App();
