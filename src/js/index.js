@@ -49,7 +49,7 @@ const storeMenu = {
   },
   getLocalStorage() {
     // localStorage에서 메뉴를 가져온다.
-    localStorage.getItem("menu");
+    return localStorage.getItem("menu");
   },
 };
 
@@ -59,6 +59,13 @@ function App() {
   // 메뉴명은 App이라는 함수 객체가 가지고 있는 상태이기 때문에 this를 이용해서 관리할 수 있다.
   // 빈 배열로 초기화하고 데이터가 변할 때마다 관리한다.
   this.menu = [];
+
+  // App 이라는 객체를 생성하고 그 App의 init이라는 메소드를 불러와서 로직을 실행될 수 있게끔 초기화 메소드를 만든다.
+  this.init = () => {
+    if (storeMenu.getLocalStorage().length > 0) {
+      this.menu = storeMenu.getLocalStorage();
+    }
+  };
 
   // espresso menu list 내 자식요소(li tag) 개수를 카운팅해서 메뉴 개수를 보여준다.
   const updateMenuCount = () => {
