@@ -132,6 +132,9 @@ function App() {
 
   const removeMenuItem = (e) => {
     if (confirm("메뉴를 삭제하시겠습니까?")) {
+      const menuId = e.target.closest("li").dataset.menuId;
+      this.menu.splice(menuId, 1);
+      storeMenu.setLocalStorage(this.menu);
       e.target.closest("li").remove();
       // 메뉴 개수 갱신
       updateMenuCount();
