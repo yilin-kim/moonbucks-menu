@@ -22,14 +22,14 @@
 // - [x] localStorage에서 메뉴를 가져온다.
 
 // 카테고리별 메뉴판 관리
-// - [ ] 에스프레소 메뉴판 관리
+// - [x] 에스프레소 메뉴판 관리
 // - [ ] 프라푸치노 메뉴판 관리
 // - [ ] 블렌디드 메뉴판 관리
 // - [ ] 티바나 메뉴판 관리
 // - [ ] 디저트 메뉴판 관리
 
 // 페이지 접근시 최초 데이터 Read & Rendering
-// - [ ] 페이지에 최초로 접근할 때는 localStorage에서 에스프레소 메뉴를 읽어온다.
+// - [x] 페이지에 최초로 접근할 때는 localStorage에서 에스프레소 메뉴를 읽어온다.
 // - [ ] 에스프레소 메뉴를 페이지에 그려준다.
 
 // 품절 상태 관리
@@ -58,10 +58,19 @@ function App() {
   // - 메뉴들, 개수, 품절 상태
   // 메뉴명은 App이라는 함수 객체가 가지고 있는 상태이기 때문에 this를 이용해서 관리할 수 있다.
   // 빈 배열로 초기화하고 데이터가 변할 때마다 관리한다.
-  this.menu = [];
+  // 메뉴별 관리를 위해 menu 데이터를 배열이 아닌 객체 형식으로 바꾼다.
+  this.menu = {
+    espresso: [],
+    frapuccino: [],
+    blended: [],
+    teavana: [],
+    dessert: [],
+  };
+  // 현재 메뉴도 상태로 관리한다.
+  this.currentCategory = "espresso";
   // 메소드 선언
   this.init = () => {
-    if (storeMenu.getLocalStorage().length > 0) {
+    if (storeMenu.getLocalStorage()) {
       // 문자열로 저장된 데이터를 파싱해서 JSON 객체로 만들어서 문자열을 순회하지 못해서 ㅅ가져와야 한다.
       this.menu = JSON.parse(storeMenu.getLocalStorage());
       console.log(this.menu);
@@ -72,7 +81,7 @@ function App() {
   // 화면에 그려주는 함수
   const render = () => {
     // map function을 통해 [`<li></li>`,`<li></li>`,`<li></li>`]으로 리턴된 걸 join 시켜서 문자열로 만들어준다.
-    const menuListTemplate = this.menu
+    const menuListTemplate = this.menu[this.currentCategory]
       .map((item, index) => {
         return `<li data-menu-id="${index}" class="menu-list-item d-flex items-center py-2">
         <span class="w-100 pl-2 menu-name">${item.name}</span>
@@ -115,8 +124,8 @@ function App() {
     // input tag의 입력값으로 메뉴 이름을 저장한다.
     const espressoMenuName = $("#espresso-menu-name").value;
 
-    // 저장한 메뉴 이름을 메뉴 배열에 push한다.
-    this.menu.push({ name: espressoMenuName });
+    // 저장한 메뉴 이름을 메뉴의 특정 키값(카테고리)에 접근해서 그 배열에 메뉴 이름을 저장한다.
+    this.menu[this.currentCategory].push({ name: espressoMenuName });
 
     // 상태가 변경됐을 때 바로 local Storage에 저장한다.
     storeMenu.setLocalStorage(this.menu);
@@ -179,9 +188,17 @@ function App() {
     // 엔터키를 눌렀을 때 메뉴를 추가하는 함수를 호출한다.
     addMenuItem();
   });
+
+  $("nav").addEventListener("click", (e) => {
+    const isCategoryButton = e.target.classList.contains("cafe-category-name");
+    if (isCategoryButton) {
+      const categoryName = e.target.dataset.categoryName;
+    }
+  });
 }
 
-// 페이지 최초로 접근했을 때 app 이라는 객체를 생성하고
+// 페이지 최초로 접근했을 때 app 이라는 객체를 생성한다.
+// new 연산자로 생성된 인스턴스는 하나의 라이프사이클을 가지고, 이거에 대한 개별적인 상태 관리가 가능해진다.
 const app = new App();
 // 그 app의 init이라는 메소드를 불러와서 로직을 실행될 수 있게끔 한다.
 app.init();
