@@ -18,8 +18,8 @@
 
 // step2 요구사항 분석
 // localStorage Read & Write
-// - [ ] localStorage에 메뉴를 저장한다. (추가, 수정, 삭제)
-// - [ ] localStorage에서 메뉴를 가져온다.
+// - [x] localStorage에 메뉴를 저장한다. (추가, 수정, 삭제)
+// - [x] localStorage에서 메뉴를 가져온다.
 
 // 카테고리별 메뉴판 관리
 // - [ ] 에스프레소 메뉴판 관리
@@ -49,7 +49,7 @@ const storeMenu = {
   },
   getLocalStorage() {
     // localStorage에서 메뉴를 가져온다.
-    localStorage.getItem("menu");
+    return localStorage.getItem("menu");
   },
 };
 
@@ -59,6 +59,45 @@ function App() {
   // 메뉴명은 App이라는 함수 객체가 가지고 있는 상태이기 때문에 this를 이용해서 관리할 수 있다.
   // 빈 배열로 초기화하고 데이터가 변할 때마다 관리한다.
   this.menu = [];
+  // 메소드 선언
+  this.init = () => {
+    if (storeMenu.getLocalStorage().length > 0) {
+      // 문자열로 저장된 데이터를 파싱해서 JSON 객체로 만들어서 문자열을 순회하지 못해서 ㅅ가져와야 한다.
+      this.menu = JSON.parse(storeMenu.getLocalStorage());
+      console.log(this.menu);
+    }
+    render();
+  };
+
+  // 화면에 그려주는 함수
+  const render = () => {
+    // map function을 통해 [`<li></li>`,`<li></li>`,`<li></li>`]으로 리턴된 걸 join 시켜서 문자열로 만들어준다.
+    const menuListTemplate = this.menu
+      .map((item, index) => {
+        return `<li data-menu-id="${index}" class="menu-list-item d-flex items-center py-2">
+        <span class="w-100 pl-2 menu-name">${item.name}</span>
+        <button
+          type="button"
+          class="bg-gray-50 text-gray-500 text-sm mr-1 menu-edit-button"
+        >
+          수정
+        </button>
+        <button
+          type="button"
+          class="bg-gray-50 text-gray-500 text-sm menu-remove-button"
+        >
+          삭제
+        </button>
+      </li>`;
+      })
+      .join("");
+
+    // HTML에 추가해서 넣어준다.
+    $("#espresso-menu-list").innerHTML = menuListTemplate;
+
+    // 메뉴 개수를 업데이트한다.
+    updateMenuCount();
+  };
 
   // espresso menu list 내 자식요소(li tag) 개수를 카운팅해서 메뉴 개수를 보여준다.
   const updateMenuCount = () => {
@@ -81,34 +120,7 @@ function App() {
 
     // 상태가 변경됐을 때 바로 local Storage에 저장한다.
     storeMenu.setLocalStorage(this.menu);
-
-    // map function을 통해 [`<li></li>`,`<li></li>`,`<li></li>`]으로 리턴된 걸 join 시켜서 문자열로 만들어준다.
-    const menuListTemplate = this.menu
-      .map((item, index) => {
-        return `<li data-menu-id="${index}" class="menu-list-item d-flex items-center py-2">
-      <span class="w-100 pl-2 menu-name">${item.name}</span>
-      <button
-        type="button"
-        class="bg-gray-50 text-gray-500 text-sm mr-1 menu-edit-button"
-      >
-        수정
-      </button>
-      <button
-        type="button"
-        class="bg-gray-50 text-gray-500 text-sm menu-remove-button"
-      >
-        삭제
-      </button>
-    </li>`;
-      })
-      .join("");
-
-    // HTML에 추가해서 넣어준다.
-    $("#espresso-menu-list").innerHTML = menuListTemplate;
-
-    // 메뉴 개수를 업데이트한다.
-    updateMenuCount();
-
+    render();
     // 메뉴 추가 후 espresso menu name을 빈값으로 초기화한다.
     $("#espresso-menu-name").value = "";
   };
@@ -169,4 +181,7 @@ function App() {
   });
 }
 
-new App();
+// 페이지 최초로 접근했을 때 app 이라는 객체를 생성하고
+const app = new App();
+// 그 app의 init이라는 메소드를 불러와서 로직을 실행될 수 있게끔 한다.
+app.init();
