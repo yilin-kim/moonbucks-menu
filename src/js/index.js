@@ -70,11 +70,11 @@ function App() {
   this.currentCategory = "espresso";
   // 메소드 선언
   this.init = () => {
-    if (storeMenu.getLocalStorage()) {
+    if (storeMenu.getLocalStorage().length > 0) {
       // 문자열로 저장된 데이터를 파싱해서 JSON 객체로 만들어서 문자열을 순회하지 못해서 ㅅ가져와야 한다.
       this.menu = JSON.parse(storeMenu.getLocalStorage());
-      console.log(this.menu);
     }
+    console.log(this.menu);
     render();
   };
 
@@ -84,7 +84,15 @@ function App() {
     const menuListTemplate = this.menu[this.currentCategory]
       .map((item, index) => {
         return `<li data-menu-id="${index}" class="menu-list-item d-flex items-center py-2">
-        <span class="w-100 pl-2 menu-name">${item.name}</span>
+        <span class="w-100 pl-2 menu-name ${item.soldOut ? "sold-out" : ""}">${
+          item.name
+        }</span>
+        <button
+          type="button"
+          class="bg-gray-50 text-gray-500 text-sm mr-1 menu-sold-out-button"
+        >
+          품절
+        </button>
         <button
           type="button"
           class="bg-gray-50 text-gray-500 text-sm mr-1 menu-edit-button"
@@ -106,13 +114,6 @@ function App() {
 
     // 메뉴 개수를 업데이트한다.
     updateMenuCount();
-  };
-
-  // App 이라는 객체를 생성하고 그 App의 init이라는 메소드를 불러와서 로직을 실행될 수 있게끔 초기화 메소드를 만든다.
-  this.init = () => {
-    if (storeMenu.getLocalStorage().length > 0) {
-      this.menu = storeMenu.getLocalStorage();
-    }
   };
 
   // espresso menu list 내 자식요소(li tag) 개수를 카운팅해서 메뉴 개수를 보여준다.
@@ -169,13 +170,27 @@ function App() {
     }
   };
 
-  // 수정, 삭제 관련 이벤트를 위임한다.
+  const soldOutMenu = (e) => {
+    const menuId = e.target.closest("li").dataset.menuId;
+    this.menu[this.currentCategory][menuId].soldOut =
+      !this.menu[this.currentCategory][menuId].soldOut;
+    storeMenu.setLocalStorage(this.menu);
+    render();
+  };
+
+  // 수정, 삭제, 품절 관련 이벤트를 위임한다.
   $("#menu-list").addEventListener("click", (e) => {
     if (e.target.classList.contains("menu-edit-button")) {
       updateMenuName(e);
+      return;
     }
     if (e.target.classList.contains("menu-remove-button")) {
       removeMenuItem(e);
+      return;
+    }
+    if (e.target.classList.contains("menu-sold-out-button")) {
+      soldOutMenu(e);
+      return;
     }
   });
 
