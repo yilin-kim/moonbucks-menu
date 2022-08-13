@@ -33,25 +33,13 @@
 // - [x] 에스프레소 메뉴를 페이지에 그려준다.
 
 // 품절 상태 관리
-// - [ ] 품절 처리 버튼을 추가한다.
-// - [ ] 품절 버튼을 누르면 localStorage에 품절 상태를 저장한다.
-// - [ ] localStorage에 품절 상태를 저장한다.
-// - [ ] 품절 상태를 UI에 반영한다.
+// - [x] 품절 처리 버튼을 추가한다.
+// - [x] 품절 버튼을 누르면 localStorage에 품절 상태를 저장한다.
+// - [x] localStorage에 품절 상태를 저장한다.
+// - [x] 품절 상태를 UI에 반영한다.
 
-// JS에서 DOM element 가져올 때 관용적으로 $표시를 사용한다.
-// $표시로 DOM element return해서 반복 줄이는 함수
-const $ = (selector) => document.querySelector(selector);
-
-const storeMenu = {
-  setLocalStorage(menu) {
-    // JSON 객체를 문자열로 저장한다.
-    localStorage.setItem("menu", JSON.stringify(menu));
-  },
-  getLocalStorage() {
-    // localStorage에서 메뉴를 가져온다.
-    return localStorage.getItem("menu");
-  },
-};
+import { $ } from "./utils/dom.js";
+import storeMenu from "./storeMenu/index.js";
 
 function App() {
   // 상태(변할 수 있는 데이터)
@@ -74,8 +62,8 @@ function App() {
       // 문자열로 저장된 데이터를 파싱해서 JSON 객체로 만들어서 문자열을 순회하지 못해서 ㅅ가져와야 한다.
       this.menu = JSON.parse(storeMenu.getLocalStorage());
     }
-    console.log(this.menu);
     render();
+    initEventListeners();
   };
 
   // 화면에 그려주는 함수
@@ -118,7 +106,7 @@ function App() {
 
   // espresso menu list 내 자식요소(li tag) 개수를 카운팅해서 메뉴 개수를 보여준다.
   const updateMenuCount = () => {
-    const menuCount = $("#menu-list").children.length;
+    const menuCount = this.menu[this.currentCategory].length;
     $(".menu-count").innerText = `총 ${menuCount}개`;
   };
 
@@ -156,7 +144,7 @@ function App() {
     this.menu[this.currentCategory][menuId].name = updatedMenuName;
     // localStorage에 반영한다.
     storeMenu.setLocalStorage(this.menu);
-    $menuName.innerText = updatedMenuName;
+    render();
   };
 
   const removeMenuItem = (e) => {
@@ -164,9 +152,7 @@ function App() {
       const menuId = e.target.closest("li").dataset.menuId;
       this.menu[this.currentCategory].splice(menuId, 1);
       storeMenu.setLocalStorage(this.menu);
-      e.target.closest("li").remove();
-      // 메뉴 개수 갱신
-      updateMenuCount();
+      render();
     }
   };
 
@@ -178,54 +164,59 @@ function App() {
     render();
   };
 
-  // 수정, 삭제, 품절 관련 이벤트를 위임한다.
-  $("#menu-list").addEventListener("click", (e) => {
-    if (e.target.classList.contains("menu-edit-button")) {
-      updateMenuName(e);
-      return;
-    }
-    if (e.target.classList.contains("menu-remove-button")) {
-      removeMenuItem(e);
-      return;
-    }
-    if (e.target.classList.contains("menu-sold-out-button")) {
-      soldOutMenu(e);
-      return;
-    }
-  });
+  const initEventListeners = () => {
+    // 수정, 삭제, 품절 관련 이벤트를 위임한다.
+    $("#menu-list").addEventListener("click", (e) => {
+      if (e.target.classList.contains("menu-edit-button")) {
+        updateMenuName(e);
+        return;
+      }
+      if (e.target.classList.contains("menu-remove-button")) {
+        removeMenuItem(e);
+        return;
+      }
+      if (e.target.classList.contains("menu-sold-out-button")) {
+        soldOutMenu(e);
+        return;
+      }
+    });
 
-  //form 태그가 자동으로 전송되는 걸 막는다.
-  $("#menu-form").addEventListener("submit", (e) => {
-    e.preventDefault();
-  });
+    //form 태그가 자동으로 전송되는 걸 막는다.
+    $("#menu-form").addEventListener("submit", (e) => {
+      e.preventDefault();
+    });
 
-  // 확인 버튼을 눌렀을 때 메뉴를 추가한다.
-  $("#menu-submit-button").addEventListener("click", addMenuItem);
+    // 확인 버튼을 눌렀을 때 메뉴를 추가한다.
+    $("#menu-submit-button").addEventListener("click", addMenuItem);
 
-  // 엔터키를 눌렀을 때 메뉴를 추가한다.
-  // 메뉴의 이름을 입력받는 건 element 찾아서, 메소드로 이벤트를 달고 이벤트를 받을 수 있다. (사용자 입력 이벤트 ex. keypress)
-  $("#menu-name").addEventListener("keypress", (e) => {
-    // 엔터키가 아닐 때 바로 종료한다.
-    if (e.key !== "Enter") return;
-    // 엔터키를 눌렀을 때 메뉴를 추가하는 함수를 호출한다.
-    addMenuItem();
-  });
+    // 엔터키를 눌렀을 때 메뉴를 추가한다.
+    // 메뉴의 이름을 입력받는 건 element 찾아서, 메소드로 이벤트를 달고 이벤트를 받을 수 있다. (사용자 입력 이벤트 ex. keypress)
+    $("#menu-name").addEventListener("keypress", (e) => {
+      // 엔터키가 아닐 때 바로 종료한다.
+      if (e.key !== "Enter") return;
+      // 엔터키를 눌렀을 때 메뉴를 추가하는 함수를 호출한다.
+      addMenuItem();
+    });
 
-  $("nav").addEventListener("click", (e) => {
-    const isCategoryButton = e.target.classList.contains("cafe-category-name");
-    if (isCategoryButton) {
-      const categoryName = e.target.dataset.categoryName;
-      // 카테고리 변경 업데이트
-      this.currentCategory = categoryName;
-      // console.log("this.currentCategory", this.currentCategory);
-      // ~메뉴 관리 카테고리명 변경
-      $(".category-title").innerText = `${e.target.innerText} 메뉴 관리`;
-      // 메뉴 이름 입력 placeholder 변경
-      $("#menu-name").placeholder = `${e.target.innerText.slice(3)} 메뉴 이름`;
-      // 카테고리 목록 렌더링
-      render();
-    }
-  });
+    $("nav").addEventListener("click", (e) => {
+      const isCategoryButton =
+        e.target.classList.contains("cafe-category-name");
+      if (isCategoryButton) {
+        const categoryName = e.target.dataset.categoryName;
+        // 카테고리 변경 업데이트
+        this.currentCategory = categoryName;
+        // console.log("this.currentCategory", this.currentCategory);
+        // ~메뉴 관리 카테고리명 변경
+        $(".category-title").innerText = `${e.target.innerText} 메뉴 관리`;
+        // 메뉴 이름 입력 placeholder 변경
+        $("#menu-name").placeholder = `${e.target.innerText.slice(
+          3
+        )} 메뉴 이름`;
+        // 카테고리 목록 렌더링
+        render();
+      }
+    });
+  };
 }
 
 // 페이지 최초로 접근했을 때 app 이라는 객체를 생성한다.
