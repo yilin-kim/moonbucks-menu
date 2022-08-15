@@ -1,65 +1,6 @@
 import { $ } from "./utils/dom.js";
 import storeMenu from "./storeMenu/index.js";
-
-const BASE_URL = "http://localhost:3000/api";
-
-const MenuApi = {
-  async getAllMenuByCategory(category) {
-    const response = await fetch(`${BASE_URL}/category/${category}/menu`);
-    if (!response.ok) {
-      console.error(response.statusText);
-    } else {
-      // console.log(response);
-      return response.json();
-    }
-  },
-  async createMenu(category, name) {
-    const response = await fetch(`${BASE_URL}/category/${category}/menu`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ name }),
-    });
-    if (!response.ok) {
-      console.error("Error creating menu");
-    }
-    return response.json();
-  },
-  async updateMenu(category, id, name) {
-    const response = await fetch(
-      `${BASE_URL}/category/${category}/menu/${id}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ name }),
-      }
-    );
-    if (!response.ok) {
-      console.error("Error updating menu");
-    }
-    return response.json();
-  },
-  async toggleSoldOutMenu(category, id) {
-    const response = await fetch(
-      `${BASE_URL}/category/${category}/menu/${id}/soldout`,
-      { method: "PUT" }
-    );
-    if (!response.ok) {
-      console.error("Error toggling menu");
-    }
-  },
-  async deleteMenu(category, id) {
-    await fetch(`${BASE_URL}/category/${category}/menu/${id}`, {
-      method: "DELETE",
-    });
-    if (!response.ok) {
-      console.error("Error deleting menu");
-    }
-  },
-};
+import MenuApi from "./api/index.js";
 
 function App() {
   // 상태(변할 수 있는 데이터)
@@ -81,13 +22,15 @@ function App() {
     this.menu[this.currentCategory] = await MenuApi.getAllMenuByCategory(
       this.currentCategory
     );
-    console.log(this.menu[this.currentCategory]);
     render();
     initEventListeners();
   };
 
   // 화면에 그려주는 함수
   const render = () => {
+    this.menu[this.currentCategory] = await MenuApi.getAllMenuByCategory(
+      this.currentCategory
+    );
     // map function을 통해 [`<li></li>`,`<li></li>`,`<li></li>`]으로 리턴된 걸 join 시켜서 문자열로 만들어준다.
     const menuListTemplate = this.menu[this.currentCategory]
       .map((item) => {
@@ -140,9 +83,6 @@ function App() {
     }
     const menuName = $("#menu-name").value;
     await MenuApi.createMenu(this.currentCategory, menuName);
-    this.menu[this.currentCategory] = await MenuApi.getAllMenuByCategory(
-      this.currentCategory
-    );
     render();
     // 메뉴 추가 후 espresso menu name을 빈값으로 초기화한다.
     $("#menu-name").value = "";
@@ -159,9 +99,6 @@ function App() {
       $menuName.innerText
     );
     await MenuApi.updateMenu(this.currentCategory, menuId, updatedMenuName);
-    this.menu[this.currentCategory] = await MenuApi.getAllMenuByCategory(
-      this.currentCategory
-    );
     render();
   };
 
@@ -169,9 +106,6 @@ function App() {
     if (confirm("메뉴를 삭제하시겠습니까?")) {
       const menuId = e.target.closest("li").dataset.menuId;
       await MenuApi.deleteMenu(this.currentCategory, menuId);
-      this.menu[this.currentCategory] = await MenuApi.getAllMenuByCategory(
-        this.currentCategory
-      );
       render();
     }
   };
@@ -179,9 +113,6 @@ function App() {
   const soldOutMenu = async (e) => {
     const menuId = e.target.closest("li").dataset.menuId;
     await MenuApi.toggleSoldOutMenu(this.currentCategory, menuId);
-    this.menu[this.currentCategory] = await MenuApi.getAllMenuByCategory(
-      this.currentCategory
-    );
     render();
   };
 
