@@ -42,6 +42,15 @@ const MenuApi = {
     }
     return response.json();
   },
+  async toggleSoldOutMenu(category, id) {
+    const response = await fetch(
+      `${BASE_URL}/category/${category}/menu/${id}/soldout`,
+      { method: "PUT" }
+    );
+    if (!response.ok) {
+      console.error("Error toggling menu");
+    }
+  },
   async deleteMenu(category, id) {
     await fetch(`${BASE_URL}/category/${category}/menu/${id}`, {
       method: "DELETE",
@@ -78,13 +87,13 @@ function App() {
   const render = () => {
     // map function을 통해 [`<li></li>`,`<li></li>`,`<li></li>`]으로 리턴된 걸 join 시켜서 문자열로 만들어준다.
     const menuListTemplate = this.menu[this.currentCategory]
-      .map((item, index) => {
+      .map((item) => {
         return `<li data-menu-id="${
           item.id
         }" class="menu-list-item d-flex items-center py-2">
-        <span class="w-100 pl-2 menu-name ${item.soldOut ? "sold-out" : ""}">${
-          item.name
-        }</span>
+        <span class="w-100 pl-2 menu-name ${
+          item.isSoldOut ? "sold-out" : ""
+        }">${item.name}</span>
         <button
           type="button"
           class="bg-gray-50 text-gray-500 text-sm mr-1 menu-sold-out-button"
@@ -136,7 +145,7 @@ function App() {
     $("#menu-name").value = "";
   };
 
-  const updateMenuName = (e) => {
+  const updateMenuName = async (e) => {
     // data 속성은 dataset으로 접근 가능해서 menuId를 가져온다.
     const menuId = e.target.closest("li").dataset.menuId;
     // 디폴트값으로 기존 메뉴의 이름을 넣어준다.
@@ -146,10 +155,10 @@ function App() {
       "메뉴 이름을 입력하세요",
       $menuName.innerText
     );
-    // 상태가 변경됐을 때 바로 수정한다.
-    this.menu[this.currentCategory][menuId].name = updatedMenuName;
-    // localStorage에 반영한다.
-    storeMenu.setLocalStorage(this.menu);
+    await MenuApi.updateMenu(this.currentCategory, menuId, updatedMenuName);
+    this.menu[this.currentCategory] = await MenuApi.getAllMenuByCategory(
+      this.currentCategory
+    );
     render();
   };
 
@@ -162,11 +171,12 @@ function App() {
     }
   };
 
-  const soldOutMenu = (e) => {
+  const soldOutMenu = async (e) => {
     const menuId = e.target.closest("li").dataset.menuId;
-    this.menu[this.currentCategory][menuId].soldOut =
-      !this.menu[this.currentCategory][menuId].soldOut;
-    storeMenu.setLocalStorage(this.menu);
+    await MenuApi.toggleSoldOutMenu(this.currentCategory, menuId);
+    this.menu[this.currentCategory] = await MenuApi.getAllMenuByCategory(
+      this.currentCategory
+    );
     render();
   };
 
