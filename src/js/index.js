@@ -81,13 +81,17 @@ function App() {
       alert("메뉴 이름을 입력해주세요.");
       return;
     }
+
+    // 중복 메뉴 처리하기
     const duplicatedItem = this.menu[this.currentCategory].find((item) => 
       item.name === $("#menu-name").value
     )
     if(duplicatedItem){
       alert("이미 존재하는 메뉴입니다.");
+      $("#menu-name").value = "";
       return;
     }
+
     const menuName = $("#menu-name").value;
     await MenuApi.createMenu(this.currentCategory, menuName);
     render();
