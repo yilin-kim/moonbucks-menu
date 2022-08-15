@@ -116,6 +116,26 @@ function App() {
     render();
   };
 
+  const changeCategory = async (e) => {
+    const isCategoryButton =
+      e.target.classList.contains("cafe-category-name");
+    if (isCategoryButton) {
+      const categoryName = e.target.dataset.categoryName;
+      // 카테고리 변경 업데이트
+      this.currentCategory = categoryName;
+      // ~메뉴 관리 카테고리명 변경
+      $(".category-title").innerText = `${e.target.innerText} 메뉴 관리`;
+      // 메뉴 이름 입력 placeholder 변경
+      $("#menu-name").placeholder = `${e.target.innerText.slice(
+        3
+      )} 메뉴 이름`;
+      this.menu[this.currentCategory] = await MenuApi.getAllMenuByCategory(
+        this.currentCategory
+      );
+      render();
+    }
+  }
+  
   const initEventListeners = () => {
     // 수정, 삭제, 품절 관련 이벤트를 위임한다.
     $("#menu-list").addEventListener("click", (e) => {
@@ -150,26 +170,8 @@ function App() {
       addMenuItem();
     });
 
-    $("nav").addEventListener("click", async (e) => {
-      const isCategoryButton =
-        e.target.classList.contains("cafe-category-name");
-      if (isCategoryButton) {
-        const categoryName = e.target.dataset.categoryName;
-        // 카테고리 변경 업데이트
-        this.currentCategory = categoryName;
-        // console.log("this.currentCategory", this.currentCategory);
-        // ~메뉴 관리 카테고리명 변경
-        $(".category-title").innerText = `${e.target.innerText} 메뉴 관리`;
-        // 메뉴 이름 입력 placeholder 변경
-        $("#menu-name").placeholder = `${e.target.innerText.slice(
-          3
-        )} 메뉴 이름`;
-        this.menu[this.currentCategory] = await MenuApi.getAllMenuByCategory(
-          this.currentCategory
-        );
-        render();
-      }
-    });
+    $("nav").addEventListener("click", changeCategory);
+    
   };
 }
 
