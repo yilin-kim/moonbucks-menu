@@ -81,6 +81,13 @@ function App() {
       alert("메뉴 이름을 입력해주세요.");
       return;
     }
+    const duplicatedItem = this.menu[this.currentCategory].find((item) => 
+      item.name === $("#menu-name").value
+    )
+    if(duplicatedItem){
+      alert("이미 존재하는 메뉴입니다.");
+      return;
+    }
     const menuName = $("#menu-name").value;
     await MenuApi.createMenu(this.currentCategory, menuName);
     render();
@@ -116,7 +123,7 @@ function App() {
     render();
   };
 
-  const changeCategory = async (e) => {
+  const changeCategory = (e) => {
     const isCategoryButton =
       e.target.classList.contains("cafe-category-name");
     if (isCategoryButton) {
@@ -129,13 +136,10 @@ function App() {
       $("#menu-name").placeholder = `${e.target.innerText.slice(
         3
       )} 메뉴 이름`;
-      this.menu[this.currentCategory] = await MenuApi.getAllMenuByCategory(
-        this.currentCategory
-      );
       render();
     }
   }
-  
+
   const initEventListeners = () => {
     // 수정, 삭제, 품절 관련 이벤트를 위임한다.
     $("#menu-list").addEventListener("click", (e) => {
